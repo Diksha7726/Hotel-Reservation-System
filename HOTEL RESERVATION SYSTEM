@@ -1,0 +1,150 @@
+import java.awt.*;
+import java.awt.event.*;
+
+public class HotelReservationSystem extends Frame implements ActionListener {
+    // Components for the GUI
+    Label nameLabel, roomTypeLabel, daysLabel, outputLabel;
+    TextField nameField, daysField;
+    Choice roomTypeChoice;
+    Button submitButton, clearButton, showRoomsButton;
+    TextArea outputArea;
+
+    // Room availability
+    int totalRooms = 18;   // Total initial rooms
+    int singleRooms = 10;  // Initial count of Single rooms
+    int doubleRooms = 5;   // Initial count of Double rooms
+    int suiteRooms = 3;    // Initial count of Suite rooms
+
+    // Constructor to set up the GUI
+    public HotelReservationSystem() {
+        setTitle("Hotel Reservation System");
+        setSize(500, 400);
+        setLayout(new FlowLayout());
+        setBackground(Color.LIGHT_GRAY);
+
+        // Name Label and Field
+        nameLabel = new Label("Name:");
+        nameField = new TextField(30);
+        add(nameLabel);
+        add(nameField);
+
+        // Room Type Label and Choice
+        roomTypeLabel = new Label("Room Type:");
+        roomTypeChoice = new Choice();
+        updateRoomTypeChoice(); // Dynamically update the dropdown
+        add(roomTypeLabel);
+        add(roomTypeChoice);
+
+        // Number of Days Label and Field
+        daysLabel = new Label("Number of Days:");
+        daysField = new TextField(5);
+        add(daysLabel);
+        add(daysField);
+
+        // Submit and Clear Buttons
+        submitButton = new Button("Submit");
+        clearButton = new Button("Clear");
+        showRoomsButton = new Button("Show Number of Rooms");
+        add(submitButton);
+        add(clearButton);
+        add(showRoomsButton);
+
+        // Output Area
+        outputLabel = new Label("Reservation Details:");
+        outputArea = new TextArea(5, 40);
+        outputArea.setEditable(false);
+        add(outputLabel);
+        add(outputArea);
+
+        // Adding Action Listeners
+        submitButton.addActionListener(this);
+        clearButton.addActionListener(this);
+        showRoomsButton.addActionListener(this);
+
+        // Window Listener for closing the application
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                dispose();
+            }
+        });
+
+        setVisible(true);
+    }
+
+    // Update room type dropdown with availability
+    private void updateRoomTypeChoice() {
+        roomTypeChoice.removeAll(); // Clear existing choices
+        roomTypeChoice.add("Single (" + singleRooms + " available)");
+        roomTypeChoice.add("Double (" + doubleRooms + " available)");
+        roomTypeChoice.add("Suite (" + suiteRooms + " available)");
+    }
+
+    // Handle button actions
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == submitButton) {
+            String name = nameField.getText();
+            String selectedRoom = roomTypeChoice.getSelectedItem();
+            String daysText = daysField.getText();
+
+            if (name.isEmpty() || daysText.isEmpty()) {
+                outputArea.setText("Please fill in all fields.");
+                return;
+            }
+
+            try {
+                int days = Integer.parseInt(daysText);
+                double rate = 0;
+
+                if (selectedRoom.startsWith("Single") && singleRooms > 0) {
+                    rate = 100;
+                    singleRooms--;
+                    totalRooms--;
+                } else if (selectedRoom.startsWith("Double") && doubleRooms > 0) {
+                    rate = 150;
+                    doubleRooms--;
+                    totalRooms--;
+                } else if (selectedRoom.startsWith("Suite") && suiteRooms > 0) {
+                    rate = 300;
+                    suiteRooms--;
+                    totalRooms--;
+                } else {
+                    outputArea.setText("Sorry, no rooms available for the selected type.");
+                    return;
+                }
+
+                double totalCost = days * rate;
+                outputArea.setText("Reservation Successful!\n" +
+                        "Name: " + name + "\n" +
+                        "Room Type: " + selectedRoom.split(" ")[0] + "\n" +
+                        "Number of Days: " + days + "\n" +
+                        "Total Cost: $" + totalCost + "\n\n" +
+                        "Updated Room Availability:\n" +
+                        "Total Rooms: " + totalRooms + "\n" +
+                        "Single Rooms: " + singleRooms + "\n" +
+                        "Double Rooms: " + doubleRooms + "\n" +
+                        "Suite Rooms: " + suiteRooms);
+
+                // Update dropdown with new availability
+                updateRoomTypeChoice();
+            } catch (NumberFormatException ex) {
+                outputArea.setText("Please enter a valid number for days.");
+            }
+        } else if (e.getSource() == clearButton) {
+            nameField.setText("");
+            daysField.setText("");
+            roomTypeChoice.select(0);
+            outputArea.setText("Fields cleared.");
+        } else if (e.getSource() == showRoomsButton) {
+            outputArea.setText("Current Room Availability:\n" +
+                    "Total Rooms: " + totalRooms + "\n" +
+                    "Single Rooms: " + singleRooms + "\n" +
+                    "Double Rooms: " + doubleRooms + "\n" +
+                    "Suite Rooms: " + suiteRooms);
+        }
+    }
+
+    // Main method to launch the application
+    public static void main(String[] args) {
+        new HotelReservationSystem();
+}
+}
